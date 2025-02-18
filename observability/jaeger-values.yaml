@@ -1,0 +1,12 @@
+provisionDataStore:
+  cassandra: false
+allInOne:
+  enabled: true # for dev/test purposes!
+storage:
+  type: none
+agent:
+  enabled: false
+collector:
+  enabled: false
+query:
+  enabled: false

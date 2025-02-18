@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "shipy.name" . }}-webapp
+  labels:
+    {{- include "shipy.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.webapp.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "shipy.webapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.webapp.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "shipy.webapp.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.webapp.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.webapp.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.webapp.container.name | default .Chart.Name | cat "ctr-webapp-" | nospace }}
+          securityContext:
+            {{- toYaml .Values.webapp.securityContext | nindent 12 }}
+          image: "{{ .Values.webapp.image.repository }}:{{ .Values.webapp.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.webapp.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.webapp.environment }}
+            - name: {{ .name | quote }}
+              value: {{ .value | quote }}
+            {{- end }}   
+          ports:
+            - name: http
+              containerPort: 7000
+              protocol: TCP
+          {{- if .Values.webapp.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              {{- with .Values.webapp.livenessProbe }}
+              path: {{ .path }}
+              port: {{ .port }}
+              {{- end }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          {{- end }}
+          {{- if .Values.webapp.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              {{- with .Values.webapp.readinessProbe }}
+              path: {{ .path }}
+              port: {{ .port }}
+              {{- end }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          {{- end }}
+          resources:
+            {{- toYaml .Values.webapp.resources | nindent 12 }}
+      {{- with .Values.webapp.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.webapp.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.webapp.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
