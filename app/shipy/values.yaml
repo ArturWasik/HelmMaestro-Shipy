@@ -3,6 +3,7 @@
 # Declare variables to be passed into your templates.
 provision:
   jaeger: true
+  rabbitmq: true
 
 jaeger:
   provisionDataStore:
@@ -18,6 +19,10 @@ jaeger:
   collector:
     enabled: false
   query:
+    enabled: false
+
+rabbitmq:
+  persistence:
     enabled: false
 
 ingress:

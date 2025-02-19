@@ -6,6 +6,10 @@ dependencies:
   name: jaeger
   repository: https://jaegertracing.github.io/helm-charts
   version: 0.56.0
+- condition: provision.rabbitmq
+  name: rabbitmq
+  repository: https://charts.bitnami.com/bitnami
+  version: 10.1.5
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives
