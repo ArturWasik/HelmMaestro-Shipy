@@ -10,6 +10,10 @@ dependencies:
   name: rabbitmq
   repository: https://charts.bitnami.com/bitnami
   version: 10.1.5
+- condition: provision.mssql
+  name: mssql-linux
+  repository: https://dnaprawa.github.io/helm-charts
+  version: 1.0.8
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives

@@ -4,6 +4,7 @@
 provision:
   jaeger: true
   rabbitmq: true
+  mssql: true
 
 jaeger:
   provisionDataStore:
@@ -22,6 +23,11 @@ jaeger:
     enabled: false
 
 rabbitmq:
+  persistence:
+    enabled: false
+
+mssql-linux:
+  saPassword: "HelmMaestro123"
   persistence:
     enabled: false
 
