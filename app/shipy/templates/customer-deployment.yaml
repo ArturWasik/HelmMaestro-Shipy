@@ -1,62 +1,62 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "shipy.name" . }}-webapp
+  name: {{ include "shipy.name" . }}-customerapi
   labels:
     {{- include "shipy.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.webapp.replicaCount }}
+  replicas: {{ .Values.customerapi.replicaCount }}
   selector:
     matchLabels:
-      {{- include "shipy.webapp.selectorLabels" . | nindent 6 }}
+      {{- include "shipy.customerapi.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.webapp.podAnnotations }}
+      {{- with .Values.customerapi.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "shipy.webapp.selectorLabels" . | nindent 8 }}
+        {{- include "shipy.customerapi.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.webapp.imagePullSecrets }}
+      {{- with .Values.customerapi.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       securityContext:
-        {{- toYaml .Values.webapp.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.customerapi.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Values.webapp.container.name | default .Chart.Name | cat "ctr-webapp-" | nospace }}
+        - name: {{ .Values.customerapi.container.name | default .Chart.Name | cat "ctr-customerapi-" | nospace }}
           securityContext:
-            {{- toYaml .Values.webapp.securityContext | nindent 12 }}
-          image: "{{ .Values.webapp.image.repository }}:{{ .Values.webapp.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.webapp.image.pullPolicy }}
+            {{- toYaml .Values.customerapi.securityContext | nindent 12 }}
+          image: "{{ .Values.customerapi.image.repository }}:{{ .Values.customerapi.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.customerapi.image.pullPolicy }}
           env:
             {{- range $key, $value := .Values.common.environment }}
             - name: {{ .name | quote }}
               value: {{ include "render-value" ( dict "value" .value "context" $) | quote }}
             {{- end }}
-            {{- range $key, $value := .Values.webapp.environment }}
+            {{- range $key, $value := .Values.customerapi.environment }}
             - name: {{ .name | quote }}
               value: {{ include "render-value" ( dict "value" .value "context" $) | quote }}
             {{- end }}   
           ports:
             - name: http
-              containerPort: 7000
+              containerPort: 5100
               protocol: TCP
-          {{- if .Values.webapp.livenessProbe.enabled }}
+          {{- if .Values.customerapi.livenessProbe.enabled }}
           livenessProbe:
             httpGet:
-              {{- with .Values.webapp.livenessProbe }}
+              {{- with .Values.customerapi.livenessProbe }}
               path: {{ .path }}
               port: {{ .port }}
               {{- end }}
             initialDelaySeconds: 5
             periodSeconds: 10
           {{- end }}
-          {{- if .Values.webapp.readinessProbe.enabled }}
+          {{- if .Values.customerapi.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
-              {{- with .Values.webapp.readinessProbe }}
+              {{- with .Values.customerapi.readinessProbe }}
               path: {{ .path }}
               port: {{ .port }}
               {{- end }}
@@ -64,16 +64,16 @@ spec:
             periodSeconds: 10
           {{- end }}
           resources:
-            {{- toYaml .Values.webapp.resources | nindent 12 }}
-      {{- with .Values.webapp.nodeSelector }}
+            {{- toYaml .Values.customerapi.resources | nindent 12 }}
+      {{- with .Values.customerapi.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.webapp.affinity }}
+      {{- with .Values.customerapi.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.webapp.tolerations }}
+      {{- with .Values.customerapi.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

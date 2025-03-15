@@ -43,10 +43,27 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Selector labels
+Web App Selector labels
 */}}
 {{- define "shipy.webapp.selectorLabels" -}}
 app.kubernetes.io/name: {{ .Release.Name | cat "webapp-" | nospace }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/version: {{ .Values.webapp.image.tag | default .Chart.AppVersion | quote }}
+{{- end }}
+
+{{/*
+customerapi Selector labels
+*/}}
+{{- define "shipy.customerapi.selectorLabels" -}}
+app.kubernetes.io/name: {{ .Release.Name | cat "customerapi-" | nospace }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Values.webapp.image.tag | default .Chart.AppVersion | quote }}
+{{- end }}
+
+{{ define "render-value" }}
+  {{- if kindIs "string" .value }}
+    {{- tpl .value .context }}
+  {{- else }}
+    {{- tpl (.value | toYaml) .context }}     
+  {{- end }}
 {{- end }}

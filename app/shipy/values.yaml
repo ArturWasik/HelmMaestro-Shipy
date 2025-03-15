@@ -1,10 +1,19 @@
-# Default values for webapp.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
 provision:
   jaeger: true
   rabbitmq: true
-  mssql: true
+  mssql-linux: true
+
+rabbitmq:
+  persistence:
+    enabled: false
+  auth:
+    username: "admin"
+    password: "HelmMaestro123"
+
+mssql-linux:
+  sapassword: "HelmMaestro123"
+  persistence:
+    enabled: false
 
 jaeger:
   provisionDataStore:
@@ -20,15 +29,6 @@ jaeger:
   collector:
     enabled: false
   query:
-    enabled: false
-
-rabbitmq:
-  persistence:
-    enabled: false
-
-mssql-linux:
-  saPassword: "HelmMaestro123"
-  persistence:
     enabled: false
 
 ingress:
@@ -51,6 +51,18 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
+common:
+  dbPassword: "HelmMaestro123"
+  environment:
+    - name: ASPNETCORE_ENVIRONMENT
+      value: Production
+    - name: OTEL_EXPORTER_JAEGER_AGENT_HOST
+      value: "{{ .Release.Name }}-jaeger-agent.{{ .Release.Namespace }}.svc.cluster.local"
+    - name: OTEL_EXPORTER_JAEGER_AGENT_PORT
+      value: "6831"
+    - name: OTEL_EXPORTER_JAEGER_ENDPOINT
+      value: "http://{{ .Release.Name }}-jaeger-collector.{{ .Release.Namespace }}.svc.cluster.local:14268"
 
 webapp:
   replicaCount: 1
@@ -77,33 +89,16 @@ webapp:
     port: "http"
 
   environment:
-    - name: ASPNETCORE_ENVIRONMENT
-      value: Production
-    - name: OTEL_EXPORTER_JAEGER_AGENT_HOST
-      value: "shipy-jaeger-agent.shipy.svc.cluster.local"
-    - name: OTEL_EXPORTER_JAEGER_AGENT_PORT
-      value: "6831"
-    - name: OTEL_EXPORTER_JAEGER_ENDPOINT
-      value: "http://shipy-jaeger-collector.shipy.svc.cluster.local:14268"
     - name: APIServiceLocations__CustomerManagementAPI
-      value: "customermanagementapi.shipy.svc.cluster.local:5100"
+      value: "{{ .Chart.Name }}-customerapi.{{ .Release.Namespace }}.svc.cluster.local:5100"
     - name: APIServiceLocations__ShipManagementAPI
-      value: "shipmanagementapi.shipy.svc.cluster.local:5000"
+      value: "{{ .Chart.Name }}-shipapi.{{ .Release.Namespace }}.svc.cluster.local:5000"
     - name: APIServiceLocations__WorkshopManagementAPI
-      value: "workshopmanagementapi.shipy.svc.cluster.local:5200" 
+      value: "{{ .Chart.Name }}-workshopapi.{{ .Release.Namespace }}.svc.cluster.local:5200" 
 
   podAnnotations: {}
-
   podSecurityContext: {}
-    # fsGroup: 2000
-
   securityContext: {}
-    # capabilities:
-    #   drop:
-    #   - ALL
-    # readOnlyRootFilesystem: true
-    # runAsNonRoot: true
-    # runAsUser: 1000
 
   service:
     type: ClusterIP
@@ -116,16 +111,62 @@ webapp:
     limits:
       memory: 128Mi
       cpu: 256m
-    # We usually recommend not to specify default resources and to leave this as a conscious
-    # choice for the user. This also increases chances charts run on environments with little
-    # resources, such as Minikube. If you do want to specify resources, uncomment the following
-    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+customerapi:
+  replicaCount: 1
+  image:
+    repository: k8smaestro/shipy-customermanagementapi
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "1.1"
+
+  container:
+    name: ""
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  livenessProbe:
+    enabled: true
+    path: "/healtz"
+    port: "http"
+  readinessProbe:
+    enabled: true
+    path: "/healtz"
+    port: "http"
+
+  environment:
+    - name: RabbitMQPublisher__Host
+      value: "{{ .Release.Name }}-rabbitmq"
+    - name: RabbitMQPublisher__Username
+      value: "{{ .Values.rabbitmq.auth.username }}"
+    - name: RabbitMQPublisher__Password
+      value: "{{ .Values.rabbitmq.auth.password }}"
+    - name: ConnectionStrings__CustomerManagementCN
+      value: "server=mssql-linux;user id=sa;password={{ .Values.common.dbPassword }};database=CustomerManagement;"
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+
+  service:
+    type: ClusterIP
+    port: 5100
+
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 64m
+    limits:
+      memory: 128Mi
+      cpu: 256m
 
   nodeSelector: {}
 

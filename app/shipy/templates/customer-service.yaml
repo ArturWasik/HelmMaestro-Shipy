@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "shipy.name" . }}-customerapi
+  labels:
+    {{- include "shipy.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.customerapi.service.type }}
+  ports:
+    - port: {{ .Values.customerapi.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "shipy.customerapi.selectorLabels" . | nindent 4 }}
