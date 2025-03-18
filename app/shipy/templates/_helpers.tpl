@@ -60,6 +60,60 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/version: {{ .Values.webapp.image.tag | default .Chart.AppVersion | quote }}
 {{- end }}
 
+{{/*
+shipapi Selector labels
+*/}}
+{{- define "shipy.shipapi.selectorLabels" -}}
+app.kubernetes.io/name: {{ .Release.Name | cat "shipapi-" | nospace }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Values.webapp.image.tag | default .Chart.AppVersion | quote }}
+{{- end }}
+
+{{/*
+workshopapi Selector labels
+*/}}
+{{- define "shipy.workshopapi.selectorLabels" -}}
+app.kubernetes.io/name: {{ .Release.Name | cat "workshopapi-" | nospace }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Values.webapp.image.tag | default .Chart.AppVersion | quote }}
+{{- end }}
+
+{{/*
+workshopeventhandler Selector labels
+*/}}
+{{- define "shipy.workshopeventhandler.selectorLabels" -}}
+app.kubernetes.io/name: {{ .Release.Name | cat "workshopeventhandler-" | nospace }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Values.webapp.image.tag | default .Chart.AppVersion | quote }}
+{{- end }}
+
+{{/*
+eventlogservice Selector labels
+*/}}
+{{- define "shipy.eventlogservice.selectorLabels" -}}
+app.kubernetes.io/name: {{ .Release.Name | cat "eventlogservice-" | nospace }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Values.webapp.image.tag | default .Chart.AppVersion | quote }}
+{{- end }}
+
+{{/*
+invoiceservice Selector labels
+*/}}
+{{- define "shipy.invoiceservice.selectorLabels" -}}
+app.kubernetes.io/name: {{ .Release.Name | cat "invoiceservice-" | nospace }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Values.webapp.image.tag | default .Chart.AppVersion | quote }}
+{{- end }}
+
+{{/*
+notificationservice Selector labels
+*/}}
+{{- define "shipy.notificationservice.selectorLabels" -}}
+app.kubernetes.io/name: {{ .Release.Name | cat "notificationservice-" | nospace }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Values.webapp.image.tag | default .Chart.AppVersion | quote }}
+{{- end }}
+
 {{ define "render-value" }}
   {{- if kindIs "string" .value }}
     {{- tpl .value .context }}

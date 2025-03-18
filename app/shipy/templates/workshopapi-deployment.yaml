@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "shipy.name" . }}-workshopapi
+  labels:
+    {{- include "shipy.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.workshopapi.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "shipy.workshopapi.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.workshopapi.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "shipy.workshopapi.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.workshopapi.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.workshopapi.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.workshopapi.container.name | default .Chart.Name | cat "ctr-workshopapi-" | nospace }}
+          securityContext:
+            {{- toYaml .Values.workshopapi.securityContext | nindent 12 }}
+          image: "{{ .Values.workshopapi.image.repository }}:{{ .Values.workshopapi.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.workshopapi.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.common.environment }}
+            - name: {{ .name | quote }}
+              value: {{ include "render-value" ( dict "value" .value "context" $) | quote }}
+            {{- end }}
+            {{- range $key, $value := .Values.workshopapi.environment }}
+            - name: {{ .name | quote }}
+              value: {{ include "render-value" ( dict "value" .value "context" $) | quote }}
+            {{- end }}   
+          ports:
+            - name: http
+              containerPort: 5200
+              protocol: TCP
+          {{- if .Values.workshopapi.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              {{- with .Values.workshopapi.livenessProbe }}
+              path: {{ .path }}
+              port: {{ .port }}
+              {{- end }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          {{- end }}
+          {{- if .Values.workshopapi.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              {{- with .Values.workshopapi.readinessProbe }}
+              path: {{ .path }}
+              port: {{ .port }}
+              {{- end }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          {{- end }}
+          resources:
+            {{- toYaml .Values.workshopapi.resources | nindent 12 }}
+      {{- with .Values.workshopapi.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.workshopapi.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.workshopapi.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

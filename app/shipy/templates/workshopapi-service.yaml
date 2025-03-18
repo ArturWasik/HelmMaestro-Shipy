@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "shipy.name" . }}-workshopapi
+  labels:
+    {{- include "shipy.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.workshopapi.service.type }}
+  ports:
+    - port: {{ .Values.workshopapi.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "shipy.workshopapi.selectorLabels" . | nindent 4 }}

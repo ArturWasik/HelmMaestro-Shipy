@@ -124,7 +124,7 @@ customerapi:
     repository: k8smaestro/shipy-customermanagementapi
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "1.1"
+    tag: "1.2"
 
   container:
     name: ""
@@ -159,6 +159,304 @@ customerapi:
   service:
     type: ClusterIP
     port: 5100
+
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 64m
+    limits:
+      memory: 128Mi
+      cpu: 256m
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+shipapi:
+  replicaCount: 1
+  image:
+    repository: k8smaestro/shipy-shipmanagementapi
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "1.2"
+
+  container:
+    name: ""
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  livenessProbe:
+    enabled: true
+    path: "/healtz"
+    port: "http"
+  readinessProbe:
+    enabled: true
+    path: "/healtz"
+    port: "http"
+
+  environment:
+    - name: RabbitMQPublisher__Host
+      value: "{{ .Release.Name }}-rabbitmq"
+    - name: RabbitMQPublisher__Username
+      value: "{{ .Values.rabbitmq.auth.username }}"
+    - name: RabbitMQPublisher__Password
+      value: "{{ .Values.rabbitmq.auth.password }}"
+    - name: ConnectionStrings__ShipManagementCN
+      value: "server=mssql-linux;user id=sa;password={{ .Values.common.dbPassword }};database=ShipManagement;"
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+
+  service:
+    type: ClusterIP
+    port: 5000
+
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 64m
+    limits:
+      memory: 128Mi
+      cpu: 256m
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+workshopapi:
+  replicaCount: 1
+  image:
+    repository: k8smaestro/shipy-workshopmanagementapi
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "1.2"
+
+  container:
+    name: ""
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  livenessProbe:
+    enabled: true
+    path: "/healtz"
+    port: "http"
+  readinessProbe:
+    enabled: true
+    path: "/healtz"
+    port: "http"
+
+  environment:
+    - name: RabbitMQPublisher__Host
+      value: "{{ .Release.Name }}-rabbitmq"
+    - name: RabbitMQPublisher__Username
+      value: "{{ .Values.rabbitmq.auth.username }}"
+    - name: RabbitMQPublisher__Password
+      value: "{{ .Values.rabbitmq.auth.password }}"
+    - name: ConnectionStrings__WorkshopManagementCN
+      value: "server=mssql-linux;user id=sa;password={{ .Values.common.dbPassword }};database=WorkshopManagement;"
+    - name: ConnectionStrings__EventStoreCN
+      value: "server=mssql-linux;user id=sa;password={{ .Values.common.dbPassword }};database=WorkshopManagementEventStore;"
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+
+  service:
+    type: ClusterIP
+    port: 5200
+
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 64m
+    limits:
+      memory: 128Mi
+      cpu: 256m
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+eventlogservice:
+  replicaCount: 1
+  image:
+    repository: k8smaestro/shipy-eventlogservice
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "1.2"
+
+  container:
+    name: ""
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  environment:
+    - name: DOTNET_ENVIRONMENT
+      value: Production
+    - name: RabbitMQHandler__Host
+      value: "{{ .Release.Name }}-rabbitmq"
+    - name: RabbitMQHandler__Username
+      value: "{{ .Values.rabbitmq.auth.username }}"
+    - name: RabbitMQHandler__Password
+      value: "{{ .Values.rabbitmq.auth.password }}"
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 64m
+    limits:
+      memory: 128Mi
+      cpu: 256m
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+workshopeventhandler:
+  replicaCount: 1
+  image:
+    repository: k8smaestro/shipy-workshopmanagementeventhandler
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "1.2"
+
+  container:
+    name: ""
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  environment:
+    - name: DOTNET_ENVIRONMENT
+      value: Production
+    - name: RabbitMQHandler__Host
+      value: "{{ .Release.Name }}-rabbitmq"
+    - name: RabbitMQHandler__Username
+      value: "{{ .Values.rabbitmq.auth.username }}"
+    - name: RabbitMQHandler__Password
+      value: "{{ .Values.rabbitmq.auth.password }}"
+    - name: RabbitMQ__Host
+      value: "{{ .Release.Name }}-rabbitmq"
+    - name: RabbitMQ__Username
+      value: "{{ .Values.rabbitmq.auth.username }}"
+    - name: RabbitMQ__Password
+      value: "{{ .Values.rabbitmq.auth.password }}"
+    - name: ConnectionStrings__WorkshopManagementCN
+      value: "server=mssql-linux;user id=sa;password={{ .Values.common.dbPassword }};database=WorkshopManagement;"
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 64m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+invoiceservice:
+  replicaCount: 1
+  image:
+    repository: k8smaestro/shipy-invoiceservice
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "1.2"
+
+  container:
+    name: ""
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  environment:
+    - name: DOTNET_ENVIRONMENT
+      value: Production
+    - name: RabbitMQHandler__Host
+      value: "{{ .Release.Name }}-rabbitmq"
+    - name: RabbitMQHandler__Username
+      value: "{{ .Values.rabbitmq.auth.username }}"
+    - name: RabbitMQHandler__Password
+      value: "{{ .Values.rabbitmq.auth.password }}"
+    - name: ConnectionStrings__InvoiceServiceCN
+      value: "server=mssql-linux;user id=sa;password={{ .Values.common.dbPassword }};database=Invoicing;"
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 64m
+    limits:
+      memory: 128Mi
+      cpu: 256m
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+notificationservice:
+  replicaCount: 1
+  image:
+    repository: k8smaestro/shipy-notificationservice
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "1.2"
+
+  container:
+    name: ""
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  environment:
+    - name: DOTNET_ENVIRONMENT
+      value: Production
+    - name: RabbitMQHandler__Host
+      value: "{{ .Release.Name }}-rabbitmq"
+    - name: RabbitMQHandler__Username
+      value: "{{ .Values.rabbitmq.auth.username }}"
+    - name: RabbitMQHandler__Password
+      value: "{{ .Values.rabbitmq.auth.password }}"
+    - name: ConnectionStrings__NotificationServiceCN
+      value: "server=mssql-linux;user id=sa;password={{ .Values.common.dbPassword }};database=Notification;"
+
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
 
   resources:
     requests:

@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "shipy.name" . }}-shipapi
+  labels:
+    {{- include "shipy.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.shipapi.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "shipy.shipapi.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.shipapi.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "shipy.shipapi.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.shipapi.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.shipapi.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.shipapi.container.name | default .Chart.Name | cat "ctr-shipapi-" | nospace }}
+          securityContext:
+            {{- toYaml .Values.shipapi.securityContext | nindent 12 }}
+          image: "{{ .Values.shipapi.image.repository }}:{{ .Values.shipapi.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.shipapi.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.common.environment }}
+            - name: {{ .name | quote }}
+              value: {{ include "render-value" ( dict "value" .value "context" $) | quote }}
+            {{- end }}
+            {{- range $key, $value := .Values.shipapi.environment }}
+            - name: {{ .name | quote }}
+              value: {{ include "render-value" ( dict "value" .value "context" $) | quote }}
+            {{- end }}   
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          {{- if .Values.shipapi.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              {{- with .Values.shipapi.livenessProbe }}
+              path: {{ .path }}
+              port: {{ .port }}
+              {{- end }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          {{- end }}
+          {{- if .Values.shipapi.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              {{- with .Values.shipapi.readinessProbe }}
+              path: {{ .path }}
+              port: {{ .port }}
+              {{- end }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          {{- end }}
+          resources:
+            {{- toYaml .Values.shipapi.resources | nindent 12 }}
+      {{- with .Values.shipapi.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.shipapi.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.shipapi.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
